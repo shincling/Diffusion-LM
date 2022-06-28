@@ -396,6 +396,7 @@ def create_gaussian_diffusion(
         if use_kl:
             loss_type = gd.LossType.E2E_KL
         else:
+            # First train with this
             loss_type = gd.LossType.E2E_MSE
     elif training_mode == 'e2e-simple':
         if use_kl:

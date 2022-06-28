@@ -2,6 +2,10 @@ import sys
 import os
 import argparse
 
+# print(sys.path)
+# print(os.getcwd())
+sys.path.append(os.getcwd())
+
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='training args.')
@@ -52,7 +56,7 @@ if __name__ == '__main__':
     else:
         assert False
 
-
+    # 应该对应的是word的初始化emb用什么
     if args.experiment == 'random':
         exp_m = 'rand'
     if args.experiment == 'random1':
@@ -95,6 +99,7 @@ if __name__ == '__main__':
 
     app = " " + args.app
 
+    # 这个写法有点意思， 用换行符链接一个长string序列
     COMMANDLINE = f" OPENAI_LOGDIR={Model_FILE}  " \
                   f"TOKENIZERS_PARALLELISM=false " \
                   f"python scripts/train.py   " \
@@ -118,6 +123,8 @@ if __name__ == '__main__':
 
     print(COMMANDLINE)
     if args.submit == 'no':
+        os.system("pwd")
+        os.system("which python")
         os.system(COMMANDLINE)  # textattack/roberta-base-ag-news # textattack/roberta-base-imdb
     # #
     elif args.submit == 'yes':
