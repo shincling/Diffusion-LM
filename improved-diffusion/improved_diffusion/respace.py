@@ -70,7 +70,7 @@ class SpacedDiffusion(GaussianDiffusion):
     """
 
     def __init__(self, use_timesteps, **kwargs):
-        self.use_timesteps = set(use_timesteps)
+        self.use_timesteps = set(use_timesteps) # NOTE(Jing): 目前就是1-2000
         self.timestep_map = []
         self.original_num_steps = len(kwargs["betas"])
 

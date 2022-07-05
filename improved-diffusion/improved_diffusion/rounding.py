@@ -43,7 +43,7 @@ def load_models(modality, mode, model_name_or_path, emb_dim, file, extra_args=No
                 print(len(vocab))
                 tokenizer = {v: k for k, v in vocab.items()}
             model = torch.nn.Embedding(len(tokenizer), emb_dim)
-            path_save = '{}/random_emb.torch'.format(file)
+            path_save = '{}/random_emb.torch'.format(file) # 确实之前在text_dataset.py 已经初始化了，如果是random的话
             model.load_state_dict(torch.load(path_save))
 
     return model, tokenizer

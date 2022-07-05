@@ -48,12 +48,12 @@ def main():
         json.dump(args.__dict__, f, indent=2)
 
     wandb.init(
-        project=os.getenv("WANDB_PROJECT", "diffusion_lm"),
+        project=os.getenv("WANDB_PROJECT", "diffusion_lm_cn"),
         name=args.checkpoint_path,
     )
     wandb.config.update(args.__dict__, allow_val_change=True)
 
-    if args.experiment_mode == 'conditional_gen':
+    if args.experiment_mode == 'conditional_gen': # otherwise "lm"
         assert args.modality in ['e2e']
         assert args.padding_mode == 'pad'
 
@@ -104,6 +104,8 @@ def main():
             model=model22,
         )
         next(data)
+        # mport ipdb; ipdb.set_trace()
+        # modelsl2: [vocab,emb] ,这个是之前已经初始化过的层
         model2, tokenizer = load_models(args.modality, args.experiment, args.model_name_or_path, args.in_channel,
                                         args.checkpoint_path, extra_args=args)
         if args.modality == 'book' or args.use_bert_tokenizer == 'yes':
@@ -128,7 +130,8 @@ def main():
     # import time
     # while not os.path.exists(os.path.join(args.checkpoint_path, 'vocab.json')):
     #     time.sleep(1)
-    def get_mapping_func(args, diffusion, data):
+    def get_mapping_func(args, diffusion, data): # TODO(Jing): 暂时不明这个是要干啥，partial func有点意思
+        # Note(Jing): 这个显然与上Line109重复
         model2, tokenizer = load_models(args.modality, args.experiment, args.model_name_or_path, args.in_channel,
                                         args.checkpoint_path, extra_args=args)
         model3 = get_weights(model2, args)
@@ -192,6 +195,7 @@ def create_argparser():
                          roc_train='diffusion_lm/ROCstory',#'diffusion_lm/ROCstory/ROCstory17.csv',
                          wiki_train='diffusion_lm/simple_wiki/data.v1.split/simple.training.txt',
                          e2e_train='e2e_data',
+                         les_train='Lesdata',
                          yelp_train='diffusion_lm/yelpnlg-resources/yelpnlg-corpus',
                          commonGen_train = 'diffusion_lm/common-gen/commongen_data',
                          emb_scale_factor=1.0, noise_level=0.0, cache_mode='no', use_bert_tokenizer='no',

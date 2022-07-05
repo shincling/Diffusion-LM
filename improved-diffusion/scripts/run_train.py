@@ -75,7 +75,7 @@ if __name__ == '__main__':
 
     elif args.modality == 'roc' or args.modality == 'roc-aug' or args.modality == 'book' \
             or args.modality == 'simple-wiki' or args.modality == 'e2e-tgt' or args.modality == 'e2e'\
-            or args.modality == 'yelp' or args.modality == 'commonGen' or args.modality == 'commonGen-aug':
+            or args.modality == 'yelp' or args.modality == 'commonGen' or args.modality == 'commonGen-aug' or args.modality == "les":
 
         Model_FILE = f"diff_{args.modality}_{args.padding_mode}_{exp_m}{args.in_channel}_{args.model_arch}_lr{args.lr}_{args.weight_decay}" \
                      f"_{args.diff_steps}_{args.noise_schedule}_{args.loss_type}_h{args.hidden_size}" \

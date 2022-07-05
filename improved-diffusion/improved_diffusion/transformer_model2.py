@@ -710,13 +710,13 @@ class TransformerNetModel2(nn.Module):
         num_heads=1,
         num_heads_upsample=-1,
         use_scale_shift_norm=False,
-        config=None,
-        config_name='bert-base-uncased',
+        config=None, # Note(Jing): addition compared with U-net
+        config_name='bert-base-uncased', # Note(Jing): addition compared with U-net
         training_mode='emb',
         vocab_size=None,
         experiment_mode='lm',
-        init_pretrained=False,
-        logits_mode=1,
+        init_pretrained=False, # Note(Jing): addition compared with U-net
+        logits_mode=1, # Note(Jing): addition compared with U-nebt
     ):
         super().__init__()
 
@@ -792,6 +792,31 @@ class TransformerNetModel2(nn.Module):
             print('initializing from pretrained bert.')
         else:
             print(config)
+            """
+            BertConfig {                                                                                                                                                                                                                             [839/1838]
+                "_name_or_path": "bert-base-uncased",
+                "architectures": [
+                    "BertForMaskedLM"
+                ],
+                "attention_probs_dropout_prob": 0.1,
+                "classifier_dropout": null,
+                "gradient_checkpointing": false,
+                "hidden_act": "gelu",
+                "hidden_dropout_prob": 0.1,
+                "hidden_size": 768,
+                "initializer_range": 0.02,
+                "intermediate_size": 3072,
+                "layer_norm_eps": 1e-12,
+                "max_position_embeddings": 512,
+                "model_type": "bert",
+                "num_attention_heads": 12,
+                "num_hidden_layers": 12,
+                "pad_token_id": 0,
+                "position_embedding_type": "absolute",
+                "transformers_version": "4.17.0.dev0",
+                "type_vocab_size": 2,
+                "use_cache": true,   "vocab_size": 30522}
+            """
             self.input_transformers = BertEncoder(config)
 
         self.register_buffer("position_ids", torch.arange(config.max_position_embeddings).expand((1, -1)))
@@ -903,6 +928,7 @@ class TransformerNetModel2(nn.Module):
         emb_inputs = self.dropout(self.LayerNorm(emb_inputs))
         if self.conditional_gen:
             # print(emb_inputs.shape, encoder_hidden_states.shape, encoder_attention_mask.shape)
+            # Notej: 这里好像知识做了个初始化来用这个conditional_gen
             input_trans_hidden_states = self.input_transformers(emb_inputs,
                                                                 encoder_hidden_states=encoder_hidden_states,
                                                                 encoder_attention_mask=encoder_attention_mask,

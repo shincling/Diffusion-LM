@@ -1466,7 +1466,7 @@ class GaussianDiffusion:
                  Some mean or variance settings may also have other keys.
         """
         assert 'input_ids' in model_kwargs
-        input_ids = model_kwargs.pop('input_ids').to(t.device)
+        input_ids = model_kwargs.pop('input_ids').to(t.device) # TODA(Jing): 这个是什么？ 为什么要根据这个算x_start? 
         x_start_mean = model.model.module.get_embeds(input_ids)
         if self.model_arch == 'conv-unet':
             seqlen = int(np.sqrt(input_ids.size(1)))

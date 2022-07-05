@@ -1,5 +1,8 @@
 # from PIL import Image
 # import blobfile as bf
+import imp
+from multiprocessing.connection import wait
+from matplotlib.pyplot import pause
 from mpi4py import MPI
 import numpy as np
 from torch.utils.data import DataLoader, Dataset
@@ -46,6 +49,10 @@ def load_data_text(
         training_data, model = get_corpus_rocstory(data_args, model, image_size,
                                             padding_mode=padding_mode, split=split,
                                             load_vocab=load_vocab)
+    if task_mode == 'les':
+        training_data, model = get_corpus_rocstory(data_args, model, image_size,
+                                            padding_mode=padding_mode, split=split,
+                                            load_vocab=load_vocab)
     elif task_mode == 'simple-wiki':
         training_data, model = get_corpus_rocstory(data_args, model, image_size,
                                             padding_mode=padding_mode, split=split,
@@ -78,7 +85,7 @@ def load_data_text(
         training_data, model = get_corpus_book(data_args, tokenizer, model, image_size,
                                               padding_mode=padding_mode, split=split,)
 
-    if data_args.modality in ['roc-aug', 'roc', 'book', 'yelp', 'commonGen', 'commonGen-aug'] and data_args.cache_mode=='no':
+    if data_args.modality in ['roc-aug', 'roc', 'les','book', 'yelp', 'commonGen', 'commonGen-aug'] and data_args.cache_mode=='no':
         dataset = TextDataset_NoCache(
             training_data,
             image_size,
@@ -377,6 +384,43 @@ def get_corpus_rocstory(data_args, model, image_size, padding_mode='block',
                             word_lst = [x.text for x in tokenizer(sentences)]
                             sentence_lst.append(word_lst)
             print(sentence_lst[:2],sentence_lst[-2:], 'dataset size=',len(sentence_lst))
+        if data_args.modality == 'les':
+            print('loading dataset from 莱斯杯数据')
+            from spacy.lang.zh import Chinese
+            # nlp = Chinese()
+            cfg = {"segmenter": "jieba"}
+            nlp = Chinese.from_config({"nlp": {"tokenizer": cfg}})
+            tokenizer = nlp.tokenizer
+            sentence_lst = []
+            if split == 'train':
+                print('loading form the TRAIN set')
+                path = f'{data_args.les_train}/les_train.kpool'
+                # path = f'{data_args.les_train}/les_train_mini.kpool' # TODO(Jing): only for debug
+            elif split == 'valid':
+                print('loading form the VALID set')
+                path = f'{data_args.les_train}/les_valid.kpool'
+            else:
+                assert False, "invalid split for ROC dataset"
+
+            with open(path, 'r') as les_reader:
+                # import ipdb; ipdb.set_trace()
+                from tqdm import tqdm
+                for row in tqdm(les_reader):
+                    sentences = row.strip()
+                    if  'START' in sentences or 'PAD' in sentences: # Note(Jing): avoid the mistake of tokenizer vocab.json
+                        continue
+                    word_lst = [x.text for x in tokenizer(sentences)]
+                    sentence_lst.append(word_lst)
+
+            # with open(data_args.roc_train, 'r') as csvfile:
+            #     roc_reader = csv.reader(csvfile) #delimiter=' ', quotechar='|')
+            #     for row in roc_reader:
+            #         # tokenize.
+            #         sentences = " ".join(row[2:])
+            #         word_lst = [x.text for x in tokenizer(sentences)]
+            #         sentence_lst.append(word_lst)
+            # sentence_lst = sentence_lst[1:]
+            print(sentence_lst[:2])
         elif data_args.modality == 'simple-wiki':
             print('loading dataset from simple wikipedia')
             sentence_lst = []
@@ -557,7 +601,10 @@ def get_corpus_rocstory(data_args, model, image_size, padding_mode='block',
         path_save_vocab = f'{data_args.checkpoint_path}/vocab.json'
         print(f'save the vocab to {path_save_vocab}')
         with open(path_save_vocab, 'w') as f:
-            json.dump(vocab_dict, f)
+            if data_args.modality == 'les':
+                json.dump(vocab_dict, f, ensure_ascii=False, indent=4)
+            else:
+                json.dump(vocab_dict, f)
     else:
         vocab_dict = load_vocab
         path_save_vocab = f'{data_args.checkpoint_path}/vocab.json'
@@ -595,7 +642,7 @@ def get_corpus_rocstory(data_args, model, image_size, padding_mode='block',
         torch.save(model.state_dict(), path_save)
 
 
-    if data_args.experiment_mode == 'lm' and data_args.modality in ['roc-aug', 'roc', 'yelp', 'commonGen', 'commonGen-aug'] \
+    if data_args.experiment_mode == 'lm' and data_args.modality in ['roc-aug', 'roc', 'les', 'yelp', 'commonGen', 'commonGen-aug'] \
             and data_args.cache_mode=='no':
         train_dataset = helper_tokenize_stream(sentence_lst, vocab_dict, model, image_size**2, data_args, padding_mode)
         return train_dataset, model
