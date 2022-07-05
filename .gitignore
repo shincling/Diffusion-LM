@@ -1,4 +1,6 @@
 diffusion_models/
+generation_outputs/
+wandb/
 *.pyc
 
 # Byte-compiled / optimized / DLL files
